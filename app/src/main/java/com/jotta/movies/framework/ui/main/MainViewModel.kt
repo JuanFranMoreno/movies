@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jotta.movies.data.model.MovieModel
 import com.jotta.movies.data.model.ResultModel
 import com.jotta.movies.domain.Movie
+import com.jotta.movies.framework.ui.Event
 import com.jotta.movies.usecases.GetPopularMovies
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -25,6 +25,9 @@ class MainViewModel @Inject constructor(private val getPopularMovies: GetPopular
     private val _showMessage = MutableLiveData<String>()
     val showMessage: LiveData<String> get() = _showMessage
 
+    private val _navigateToDetail = MutableLiveData<Event<Int>>()
+    val navigateToDetail: LiveData<Event<Int>> get() = _navigateToDetail
+
     fun onCreate(){
         viewModelScope.launch {
             isLoading.postValue(true)
@@ -36,6 +39,6 @@ class MainViewModel @Inject constructor(private val getPopularMovies: GetPopular
     }
 
     fun onMovieClicked(movie: ResultModel) {
-        _showMessage.value = movie.title
+        _navigateToDetail.value = Event(movie.id)
     }
 }

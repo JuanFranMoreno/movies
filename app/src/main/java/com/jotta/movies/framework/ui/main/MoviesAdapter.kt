@@ -1,5 +1,6 @@
 package com.jotta.movies.framework.ui.main
 
+import android.media.Image
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,8 +9,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.jotta.movies.R
+import com.jotta.movies.core.load
 import com.jotta.movies.data.model.MovieModel
 import com.jotta.movies.data.model.ResultModel
+import com.jotta.movies.databinding.ActivityMainBinding
+import com.jotta.movies.databinding.ViewMovieBinding
+
+private typealias MovieListener = (ResultModel) -> Unit
 
 class MoviesAdapter(private val listener: (ResultModel) -> Unit) : RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
 
@@ -23,7 +29,7 @@ class MoviesAdapter(private val listener: (ResultModel) -> Unit) : RecyclerView.
         val view = LayoutInflater
             .from(parent.context)
             .inflate(R.layout.view_movie,parent,false)
-        return ViewHolder(view)
+        return ViewHolder(view, listener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -33,15 +39,18 @@ class MoviesAdapter(private val listener: (ResultModel) -> Unit) : RecyclerView.
 
     override fun getItemCount(): Int = movies.size
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val title = view.findViewById<TextView>(R.id.movieTitle)
-        private val cover = view.findViewById<ImageView>(R.id.cover)
+    class ViewHolder(view: View, private val listener: MovieListener) : RecyclerView.ViewHolder(view) {
+        private val binding = ViewMovieBinding.bind(view)
 
         fun bind(movie:ResultModel){
-            title.text = movie.title
-            Glide.with(cover.context)
-                .load("https://image.tmdb.org/t/p/w500/${movie.posterPath}")
-                .into(cover)
+            with(binding){
+                movieTitle.text = movie.title
+                cover.load("https://image.tmdb.org/t/p/w500/${movie.posterPath}")
+                root.setOnClickListener {
+                    listener(movie)
+                }
+            }
+
         }
 
     }

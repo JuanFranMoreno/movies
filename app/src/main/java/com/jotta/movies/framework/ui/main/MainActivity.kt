@@ -4,12 +4,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.jotta.movies.R
+import com.jotta.movies.core.observe
+import com.jotta.movies.core.startActivity
 import com.jotta.movies.data.MovieRepository
 import com.jotta.movies.databinding.ActivityMainBinding
+import com.jotta.movies.framework.ui.movie_details.MovieDetail
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -30,21 +30,23 @@ class MainActivity : AppCompatActivity() {
 
 
         val moviesAdapter = MoviesAdapter(viewModel::onMovieClicked)
-        val recycler = findViewById<RecyclerView>(R.id.recycler)
+        val recycler = binding.recycler
         recycler.layoutManager = GridLayoutManager(this,3)
 
-        viewModel.movies.observe(this){
-            moviesAdapter.movies = it
+        with(viewModel){
+            observe(movies) {moviesAdapter.movies = it}
+            observe(isLoading) {binding.progressBar.isVisible = it}
+            observe(navigateToDetail){
+                event -> event.getContentIfNotHandled()?.let { navigateToDetail(it) }
+            }
+
         }
 
         recycler.adapter = moviesAdapter
-
         viewModel.onCreate()
+    }
 
-        viewModel.isLoading.observe(this, Observer {
-            binding.progressBar.isVisible = it
-        })
-
-
+    private fun navigateToDetail(id: Int){
+        startActivity<MovieDetail>(MovieDetail.EXTRA_ID to id)
     }
 }
